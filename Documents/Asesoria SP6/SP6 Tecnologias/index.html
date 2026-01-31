@@ -3,98 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roadmap SP6 Technologias</title>
+    <title>SP6 Tecnologías Roadmap Estratégico 2026</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --bg: #0f172a; --card-bg: #1e293b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #f8fafc; margin: 0; overflow: hidden; }
-        #dashboard { display: flex; flex-direction: column; height: 100vh; padding: 20px; box-sizing: border-box; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .progress-wrapper { width: 200px; background: #334155; border-radius: 10px; height: 8px; margin-top: 5px; }
-        #bar { background: var(--success); height: 100%; width: 0%; border-radius: 10px; transition: width 1s; }
-        .roadmap-viewport { flex-grow: 1; display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; }
-        .phase-col { min-width: 300px; background: rgba(30, 41, 59, 0.5); border-radius: 12px; padding: 15px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; }
-        .phase-header { font-weight: bold; color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
-        .card { background: var(--card-bg); border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #475569; }
-        .card.hecho { border-left-color: var(--success); }
-        .card.en-curso { border-left-color: var(--warning); }
-        .btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+        :root {
+            --bg-dark: #0f1115; /* Negro profundo mate */
+            --card-bg: #1a1d23; /* Gris muy oscuro para las tarjetas */
+            --silver: #e2e8f0;   /* Plateado para el texto principal */
+            --blue-sp6: #0077b6; /* El azul de tu marca */
+            --border: #2d3139;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--silver);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            color: var(--blue-sp6);
+            font-weight: bold;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        .roadmap-container {
+            display: flex;
+            gap: 25px;
+            overflow-x: auto;
+            padding-bottom: 30px;
+            scroll-behavior: smooth;
+        }
+
+        /* Estilizado de la columna de fase */
+        .phase-column {
+            min-width: 320px;
+            background: rgba(26, 29, 35, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .phase-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--blue-sp6);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+            text-align: center;
+        }
+
+        /* Tarjetas de Hitos */
+        .milestone-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-left: 5px solid #475569; /* Color por defecto plata/gris */
+            transition: all 0.3s ease;
+        }
+
+        .milestone-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--blue-sp6);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+
+        .milestone-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .milestone-meta {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Colores según Estado */
+        .status-hecho { border-left-color: #10b981 !important; } /* Verde */
+        .status-en-progreso { border-left-color: #f59e0b !important; } /* Naranja/Oro */
+        .status-pendiente { border-left-color: #64748b !important; } /* Gris */
+
+        /* Personalización del Scroll */
+        ::-webkit-scrollbar { height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--blue-sp6); }
     </style>
 </head>
 <body>
-    <div id="dashboard">
-        <header>
-            <div>
-                <h1 style="margin:0; font-size:1.2rem;">SP6 Roadmap 2026</h1>
-                <div class="progress-wrapper"><div id="bar"></div></div>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn" onclick="toggleFS()">⛶ Pantalla Completa</button>
-                <button class="btn" style="background:#334155" onclick="loadData()">🔄</button>
-            </div>
-        </header>
-        <div id="roadmap" class="roadmap-viewport"></div>
-    </div>
+
+    <header>
+        <h1>SP6 Tecnologías</h1>
+        <div class="subtitle">ROADMAP ESTRATÉGICO 2026</div>
+    </header>
+
+    <div class="roadmap-container" id="roadmap-root">
+        </div>
 
     <script>
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQhlNfHYzNFcal4t70woFvZuBu0_B8vkRcV0YbEfgtfIW9U_H3yzZDwFve9OW3wQA/pub?output=csv';
+        // Tu link de Google Sheets publicado como CSV
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQhlNfHYzNFcal4t70woFvZuBu0_B8vkRcV0YbEfgtfIW9U_H3yzZDwFve9OW3wQA/pub?output=csv';
 
-        function toggleFS() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else document.exitFullscreen();
-        }
+        Papa.parse(SHEET_URL, {
+            download: true,
+            header: true,
+            complete: function(results) {
+                const data = results.data;
+                const root = document.getElementById('roadmap-root');
+                root.innerHTML = ''; // Limpiar cargando
 
-        async function loadData() {
-            Papa.parse(CSV_URL, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: (results) => render(results.data)
-            });
-        }
-
-        function render(data) {
-            const container = document.getElementById('roadmap');
-            container.innerHTML = "";
-            
-            // Normalizar nombres de columnas (limpiar espacios y mayúsculas)
-            const cleanData = data.map(row => {
-                const newRow = {};
-                Object.keys(row).forEach(key => {
-                    const cleanKey = key.trim().toLowerCase();
-                    newRow[cleanKey] = row[key];
+                // Agrupar por Fases
+                const fasesMap = {};
+                data.forEach(item => {
+                    if(!item.Fase) return;
+                    if(!fasesMap[item.Fase]) fasesMap[item.Fase] = [];
+                    fasesMap[item.Fase].push(item);
                 });
-                return newRow;
-            });
 
-            const validRows = cleanData.filter(d => d.milestone || d['hito']);
-            
-            // Progreso
-            const hechos = validRows.filter(d => d.estado?.toLowerCase().includes('hecho')).length;
-            document.getElementById('bar').style.width = ((hechos / validRows.length) * 100) + "%";
+                // Crear columnas por cada fase
+                Object.keys(fasesMap).forEach(nombreFase => {
+                    const column = document.createElement('div');
+                    column.className = 'phase-column';
+                    
+                    let cardsHtml = `<div class="phase-title">${nombreFase}</div>`;
+                    
+                    fasesMap[nombreFase].forEach(hito => {
+                        // Limpiar el estado para la clase CSS
+                        const estadoClase = hito.Estado ? hito.Estado.toLowerCase().replace(/\s+/g, '-') : 'pendiente';
+                        
+                        cardsHtml += `
+                            <div class="milestone-card status-${estadoClase}">
+                                <div class="milestone-name">${hito.Milestone}</div>
+                                <div class="milestone-meta">
+                                    <span>${hito.FechaObjetivo || ''}</span>
+                                    <span style="text-transform: uppercase; font-size: 0.7rem; opacity: 0.7;">${hito.Estado || ''}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
 
-            // Fases
-            const fases = [...new Set(validRows.map(d => d.fase || "General"))];
-            fases.forEach(fase => {
-                const col = document.createElement('div');
-                col.className = 'phase-col';
-                col.innerHTML = `<div class="phase-header">${fase}</div>`;
-                
-                validRows.filter(d => (d.fase || "General") === fase).forEach(item => {
-                    const card = document.createElement('div');
-                    const estado = (item.estado || "").toLowerCase();
-                    card.className = `card ${estado.includes('hecho') ? 'hecho' : estado.includes('curso') ? 'en-curso' : ''}`;
-                    card.innerHTML = `
-                        <div style="font-weight:bold">${item.milestone || item.hito}</div>
-                        <div style="font-size:0.8rem; color:#94a3b8; margin-top:5px">📅 ${item.fechaobjetivo || item.fecha || 'TBD'}</div>
-                        <div style="font-size:0.7rem; margin-top:5px; opacity:0.8">${item.estado || ''}</div>
-                    `;
-                    col.appendChild(card);
+                    column.innerHTML = cardsHtml;
+                    root.appendChild(column);
                 });
-                container.appendChild(col);
-            });
-        }
-        loadData();
+            },
+            error: function(err) {
+                document.getElementById('roadmap-root').innerHTML = '<p style="color:red;">Error al cargar datos del Excel. Revisa la conexión.</p>';
+            }
+        });
     </script>
 </body>
 </html>
