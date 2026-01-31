@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root {
-            --card-bg: rgba(26, 29, 35, 0.9);
+            --card-bg: rgba(15, 17, 21, 0.9); /* Fondo oscuro semitransparente */
             --silver: #e2e8f0;
             --blue-sp6: #0077b6;
             --border: #2d3139;
@@ -16,82 +16,77 @@
         }
 
         body {
+            /* RE-INTEGRACIÓN DE LA IMAGEN DE FONDO */
             background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
                         url('pared.jpg') no-repeat center center fixed;
             background-size: cover;
             color: var(--silver);
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0; padding: 20px;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
         }
 
         header {
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: 1px solid var(--border);
             padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
         }
 
         h1 { font-size: 2.2rem; text-transform: uppercase; letter-spacing: 4px; margin: 0; color: #ffffff; }
         .subtitle { color: var(--blue-sp6); font-weight: bold; margin-top: 5px; letter-spacing: 2px; }
 
+        /* Barra Global */
         .global-progress-container {
-            max-width: 800px;
-            margin: 0 auto 40px auto;
+            max-width: 900px;
+            margin: 0 auto 30px auto;
             background: var(--card-bg);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 20px;
+            border-radius: 12px;
             border: 1px solid var(--border);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
         }
 
-        .progress-bar-bg {
-            background: #2d3139;
-            height: 12px;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
+        .progress-bar-bg { background: #2d3139; height: 12px; border-radius: 6px; overflow: hidden; margin-top: 10px; }
+        .progress-bar-fill { background: linear-gradient(90deg, var(--blue-sp6), var(--success)); height: 100%; width: 0%; transition: width 1s; }
 
-        .progress-bar-fill {
-            background: linear-gradient(90deg, var(--blue-sp6), var(--success));
-            height: 100%;
-            width: 0%;
-            transition: width 1s ease-in-out;
-        }
-
-        .roadmap-container { display: flex; gap: 25px; overflow-x: auto; padding-bottom: 30px; }
+        .roadmap-container { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; }
 
         .phase-column {
-            min-width: 320px;
+            min-width: 340px;
             background: var(--card-bg);
             border-radius: 12px;
-            padding: 20px;
+            padding: 15px;
             border: 1px solid var(--border);
-            display: flex; flex-direction: column;
+            backdrop-filter: blur(5px);
         }
 
-        .phase-header {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 10px;
-        }
-
+        .phase-header { text-align: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .phase-title { font-size: 1rem; font-weight: 800; color: var(--blue-sp6); text-transform: uppercase; }
-        .phase-progress-text { font-size: 0.75rem; color: var(--silver); margin-top: 5px; }
 
+        /* Tarjetas Detalladas */
         .milestone-card {
             background: #1a1d23;
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 15px;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             border-left: 5px solid #475569;
         }
 
+        .milestone-name { font-weight: bold; font-size: 0.95rem; display: block; margin-bottom: 8px; }
+
+        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.75rem; color: #94a3b8; }
+        
+        .badge { font-weight: bold; text-transform: uppercase; font-size: 0.65rem; }
+        
+        /* Colores de Estado */
         .status-hecho { border-left-color: var(--success) !important; }
         .status-en-progreso { border-left-color: var(--warning) !important; }
-        
+
+        .item-progress-bar { height: 4px; background: #2d3139; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+        .item-progress-fill { height: 100%; background: var(--blue-sp6); }
+
         ::-webkit-scrollbar { height: 8px; }
         ::-webkit-scrollbar-thumb { background: var(--blue-sp6); border-radius: 10px; }
     </style>
@@ -105,8 +100,8 @@
 
     <div class="global-progress-container">
         <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
-            <span>Avance Estratégico Real (Hecho 100% | Proceso 50%)</span>
-            <span id="global-perc">0%</span>
+            <span>Avance Corporativo Global</span>
+            <strong id="global-perc">0%</strong>
         </div>
         <div class="progress-bar-bg">
             <div id="global-bar" class="progress-bar-fill"></div>
@@ -118,15 +113,11 @@
     <script>
         const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQhlNfHYzNFcal4t70woFvZuBu0_B8vkRcV0YbEfgtfIW9U_H3yzZDwFve9OW3wQA/pub?output=csv';
 
-        function calcularProgreso(hitos) {
-            if (hitos.length === 0) return 0;
-            const puntos = hitos.reduce((acc, h) => {
-                const est = h.Estado ? h.Estado.toLowerCase() : '';
-                if (est === 'hecho') return acc + 1;
-                if (est === 'en progreso' || est === 'en curso') return acc + 0.5;
-                return acc;
-            }, 0);
-            return Math.round((puntos / hitos.length) * 100);
+        function getPuntos(estado) {
+            const e = estado ? estado.toLowerCase() : '';
+            if (e === 'hecho') return 1;
+            if (e === 'en progreso' || e === 'en curso') return 0.5;
+            return 0;
         }
 
         Papa.parse(SHEET_URL, {
@@ -137,8 +128,8 @@
                 const root = document.getElementById('roadmap-root');
                 root.innerHTML = '';
 
-                // Progreso Global
-                const percGlobal = calcularProgreso(data);
+                const totalPuntos = data.reduce((acc, h) => acc + getPuntos(h.Estado), 0);
+                const percGlobal = Math.round((totalPuntos / data.length) * 100);
                 document.getElementById('global-bar').style.width = percGlobal + '%';
                 document.getElementById('global-perc').innerText = percGlobal + '%';
 
@@ -150,27 +141,28 @@
 
                 Object.keys(fasesMap).forEach(nombreFase => {
                     const hilitos = fasesMap[nombreFase];
-                    const percFase = calcularProgreso(hilitos);
-
                     const column = document.createElement('div');
                     column.className = 'phase-column';
                     
-                    let html = `
-                        <div class="phase-header">
-                            <div class="phase-title">${nombreFase}</div>
-                            <div class="phase-progress-text">Avance: ${percFase}%</div>
-                            <div class="progress-bar-bg" style="height: 6px; margin-top: 5px;">
-                                <div class="progress-bar-fill" style="width: ${percFase}%"></div>
-                            </div>
-                        </div>
-                    `;
+                    let html = `<div class="phase-header"><div class="phase-title">${nombreFase}</div></div>`;
                     
                     hilitos.forEach(hito => {
-                        const estadoClase = hito.Estado ? hito.Estado.toLowerCase().replace(/\s+/g, '-') : 'pendiente';
+                        const est = hito.Estado || 'Pendiente';
+                        const estClase = est.toLowerCase().replace(/\s+/g, '-');
+                        const puntos = getPuntos(est) * 100;
+
                         html += `
-                            <div class="milestone-card status-${estadoClase}">
-                                <div style="font-weight:bold; font-size: 0.95rem; margin-bottom:5px;">${hito.Milestone}</div>
-                                <div style="font-size:0.8rem; color:#94a3b8;">${hito.FechaObjetivo || ''}</div>
+                            <div class="milestone-card status-${estClase}">
+                                <span class="milestone-name">${hito.Milestone}</span>
+                                <div class="meta-grid">
+                                    <div>📅 ${hito.FechaObjetivo || 'TBD'}</div>
+                                    <div style="text-align:right">👤 ${hito.Responsable || 'N/A'}</div>
+                                    <div>Status: <span class="badge">${est}</span></div>
+                                    <div style="text-align:right">Avance: ${puntos}%</div>
+                                </div>
+                                <div class="item-progress-bar">
+                                    <div class="item-progress-fill" style="width: ${puntos}%"></div>
+                                </div>
                             </div>
                         `;
                     });
