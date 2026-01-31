@@ -11,48 +11,55 @@
             --silver: #e2e8f0;
             --blue-sp6: #0077b6;
             --border: #2d3139;
+            --success: #10b981;
+            --warning: #f59e0b;
         }
 
         body {
-            /* Usamos la imagen que acabas de subir */
             background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
                         url('pared.jpg') no-repeat center center fixed;
             background-size: cover;
             color: var(--silver);
             font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 40px;
+            margin: 0; padding: 20px;
         }
 
         header {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 20px;
+            padding-bottom: 15px;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            margin: 0;
-            color: #ffffff;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+        h1 { font-size: 2.2rem; text-transform: uppercase; letter-spacing: 4px; margin: 0; color: #ffffff; }
+        .subtitle { color: var(--blue-sp6); font-weight: bold; margin-top: 5px; letter-spacing: 2px; }
+
+        .global-progress-container {
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
         }
 
-        .subtitle {
-            color: var(--blue-sp6);
-            font-weight: bold;
-            margin-top: 10px;
-            letter-spacing: 2px;
+        .progress-bar-bg {
+            background: #2d3139;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 8px;
         }
 
-        .roadmap-container {
-            display: flex;
-            gap: 25px;
-            overflow-x: auto;
-            padding-bottom: 30px;
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--blue-sp6), var(--success));
+            height: 100%;
+            width: 0%;
+            transition: width 1s ease-in-out;
         }
+
+        .roadmap-container { display: flex; gap: 25px; overflow-x: auto; padding-bottom: 30px; }
 
         .phase-column {
             min-width: 320px;
@@ -60,36 +67,32 @@
             border-radius: 12px;
             padding: 20px;
             border: 1px solid var(--border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
         }
 
-        .phase-title {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--blue-sp6);
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--border);
+        .phase-header {
             text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
         }
+
+        .phase-title { font-size: 1rem; font-weight: 800; color: var(--blue-sp6); text-transform: uppercase; }
+        .phase-progress-text { font-size: 0.75rem; color: var(--silver); margin-top: 5px; }
 
         .milestone-card {
             background: #1a1d23;
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 18px;
-            margin-bottom: 15px;
+            padding: 15px;
+            margin-bottom: 12px;
             border-left: 5px solid #475569;
-            transition: transform 0.2s;
         }
 
-        .milestone-card:hover { transform: scale(1.02); }
-
-        .status-hecho { border-left-color: #10b981 !important; }
-        .status-en-progreso { border-left-color: #f59e0b !important; }
+        .status-hecho { border-left-color: var(--success) !important; }
+        .status-en-progreso { border-left-color: var(--warning) !important; }
         
-        ::-webkit-scrollbar { height: 10px; }
+        ::-webkit-scrollbar { height: 8px; }
         ::-webkit-scrollbar-thumb { background: var(--blue-sp6); border-radius: 10px; }
     </style>
 </head>
@@ -100,41 +103,78 @@
         <div class="subtitle">ROADMAP ESTRATÉGICO 2026</div>
     </header>
 
+    <div class="global-progress-container">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+            <span>Avance Estratégico Real (Hecho 100% | Proceso 50%)</span>
+            <span id="global-perc">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div id="global-bar" class="progress-bar-fill"></div>
+        </div>
+    </div>
+
     <div class="roadmap-container" id="roadmap-root"></div>
 
     <script>
         const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQhlNfHYzNFcal4t70woFvZuBu0_B8vkRcV0YbEfgtfIW9U_H3yzZDwFve9OW3wQA/pub?output=csv';
 
+        function calcularProgreso(hitos) {
+            if (hitos.length === 0) return 0;
+            const puntos = hitos.reduce((acc, h) => {
+                const est = h.Estado ? h.Estado.toLowerCase() : '';
+                if (est === 'hecho') return acc + 1;
+                if (est === 'en progreso' || est === 'en curso') return acc + 0.5;
+                return acc;
+            }, 0);
+            return Math.round((puntos / hitos.length) * 100);
+        }
+
         Papa.parse(SHEET_URL, {
             download: true,
             header: true,
             complete: function(results) {
-                const data = results.data;
+                const data = results.data.filter(item => item.Fase && item.Milestone);
                 const root = document.getElementById('roadmap-root');
                 root.innerHTML = '';
 
+                // Progreso Global
+                const percGlobal = calcularProgreso(data);
+                document.getElementById('global-bar').style.width = percGlobal + '%';
+                document.getElementById('global-perc').innerText = percGlobal + '%';
+
                 const fasesMap = {};
                 data.forEach(item => {
-                    if(!item.Fase) return;
                     if(!fasesMap[item.Fase]) fasesMap[item.Fase] = [];
                     fasesMap[item.Fase].push(item);
                 });
 
                 Object.keys(fasesMap).forEach(nombreFase => {
+                    const hilitos = fasesMap[nombreFase];
+                    const percFase = calcularProgreso(hilitos);
+
                     const column = document.createElement('div');
                     column.className = 'phase-column';
-                    let cardsHtml = `<div class="phase-title">${nombreFase}</div>`;
                     
-                    fasesMap[nombreFase].forEach(hito => {
+                    let html = `
+                        <div class="phase-header">
+                            <div class="phase-title">${nombreFase}</div>
+                            <div class="phase-progress-text">Avance: ${percFase}%</div>
+                            <div class="progress-bar-bg" style="height: 6px; margin-top: 5px;">
+                                <div class="progress-bar-fill" style="width: ${percFase}%"></div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    hilitos.forEach(hito => {
                         const estadoClase = hito.Estado ? hito.Estado.toLowerCase().replace(/\s+/g, '-') : 'pendiente';
-                        cardsHtml += `
+                        html += `
                             <div class="milestone-card status-${estadoClase}">
-                                <div style="font-weight:bold; margin-bottom:5px;">${hito.Milestone}</div>
-                                <div style="font-size:0.85rem; color:#94a3b8;">${hito.FechaObjetivo || ''}</div>
+                                <div style="font-weight:bold; font-size: 0.95rem; margin-bottom:5px;">${hito.Milestone}</div>
+                                <div style="font-size:0.8rem; color:#94a3b8;">${hito.FechaObjetivo || ''}</div>
                             </div>
                         `;
                     });
-                    column.innerHTML = cardsHtml;
+                    column.innerHTML = html;
                     root.appendChild(column);
                 });
             }
