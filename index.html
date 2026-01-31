@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SP6 Tecnologías Roadmap Estratégico 2026</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f1115; 
+            --card-bg: rgba(26, 29, 35, 0.9); /* Un poco transparente para ver el fondo */
+            --silver: #e2e8f0;   
+            --blue-sp6: #0077b6; 
+            --border: #2d3139;
+        }
+
+        body {
+            /* CAMBIO AQUÍ: Fondo con imagen */
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('pared.jpg') no-repeat center center fixed; 
+            background-size: cover;
+            color: var(--silver);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            color: var(--blue-sp6);
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .roadmap-container {
+            display: flex;
+            gap: 25px;
+            overflow-x: auto;
+            padding-bottom: 30px;
+        }
+
+        .phase-column {
+            min-width: 320px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .phase-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--blue-sp6);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+            text-align: center;
+        }
+
+        .milestone-card {
+            background: #1a1d23;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-left: 5px solid #475569;
+        }
+
+        .status-hecho { border-left-color: #10b981 !important; }
+        .status-en-progreso { border-left-color: #f59e0b !important; }
+        .status-pendiente { border-left-color: #64748b !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>SP6 Tecnologías</h1>
+        <div class="subtitle">ROADMAP ESTRATÉGICO 2026</div>
+    </header>
+
+    <div class="roadmap-container" id="roadmap-root"></div>
+
+    <script>
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQhlNfHYzNFcal4t70woFvZuBu0_B8vkRcV0YbEfgtfIW9U_H3yzZDwFve9OW3wQA/pub?output=csv';
+
+        Papa.parse(SHEET_URL, {
+            download: true,
+            header: true,
+            complete: function(results) {
+                const data = results.data;
+                const root = document.getElementById('roadmap-root');
+                root.innerHTML = '';
+
+                const fasesMap = {};
+                data.forEach(item => {
+                    if(!item.Fase) return;
+                    if(!fasesMap[item.Fase]) fasesMap[item.Fase] = [];
+                    fasesMap[item.Fase].push(item);
+                });
+
+                Object.keys(fasesMap).forEach(nombreFase => {
+                    const column = document.createElement('div');
+                    column.className = 'phase-column';
+                    let cardsHtml = `<div class="phase-title">${nombreFase}</div>`;
+                    
+                    fasesMap[nombreFase].forEach(hito => {
+                        const estadoClase = hito.Estado ? hito.Estado.toLowerCase().replace(/\s+/g, '-') : 'pendiente';
+                        cardsHtml += `
+                            <div class="milestone-card status-${estadoClase}">
+                                <div class="milestone-name">${hito.Milestone}</div>
+                                <div class="milestone-meta">
+                                    <span>${hito.FechaObjetivo || ''}</span>
+                                    <span style="text-transform: uppercase; font-size: 0.7rem;">${hito.Estado || ''}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    column.innerHTML = cardsHtml;
+                    root.appendChild(column);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
